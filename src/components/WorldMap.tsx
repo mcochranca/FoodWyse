@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Recipe } from '../types';
 
 interface WorldMapProps {
@@ -6,33 +8,29 @@ interface WorldMapProps {
 }
 
 const WorldMap: React.FC<WorldMapProps> = ({ recipes }) => {
-  return (
-    <div className="w-full h-96 bg-blue-100 relative overflow-hidden">
-      <svg
-        viewBox="0 0 1000 500"
-        className="absolute inset-0 w-full h-full"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <path
-          d="M781.68,324.4l-24.31,8.62,10.53,16.82-32.76-5.94,3.44,13.39L719.46,363l-0.24,14.33-40.62-17.69,34.51,33.3L691.5,410l51.38,0.61L692.9,441.7l0.45,14.69-33.38,34.52-20.36-4.67,8.22,25.57-26.31,22.12-0.16,38.23-21.78-0.38-6.72-88.46-4.06-76.32-4.64-30.97L554,327.11l-38.07-1.42L472.39,339l-44.47-20.76-3.72-18.97-45.05,20.71L354.9,299.46l-22.57,38.48-2.7,80.07-27.26,30.93-74.14,8.45-11.64,12.6,7.65,17.33-10.15,17.87-24.3-5.36-7.6,9.85-2.18-13.54-25.05,10.6-7.78-16.21-26.35-9.42L103.64,487l-4.6,17.73,5.24,19.42-26.62,9.97L19,547.55l-19-20-0.08-15.4,30.95-27.65,1.85-30.2L1.61,450.11l8.93-8.68,47.74,3.09,10.96-25.19L92.5,398.39l-6.5-16.55,26.47-3.98L130,362.59l33.28,5.43,6.34-11.35,23.48-22.18,14.8,15.45,13.96-14.57,10.85,12.58,11.89-19.31,10.35-3.72,7.69-15.38,30.89,12.51,11-11.39,12.78,7.52,6.89-6.55,30.73,13.32,12.76-6.77,31.19,17.97-5.2-14.79,15.8-13.14,2.3-27.39,11.76-2.92,4.22,9.8,14.79-12.26,7.74,5.72,11.26-6.06,16.62,5.5,19.16-15.62,27.4-7.31,15.85,2.73,7.12-9.89,18.78,0.27L603,240.5l9.54,1.6,12.08-15.69,12.67,0.06,4.17-7.1,6.57-0.54,4.62,4.58,32.34,4.54,4.96-4.71,22.3-0.68,6.85-5.82,10.25,11.77,10.33-2.99,9.9,9.33,32.55-18.35,11.65-20.33,22.52-3.44,1.95-5.5,25.52,5.35,8.93-8.98,22.15,8.38,10.44-5.47,11.68,3.26,6.81-6.43,22.97,3.33,5.87-5.46,17.73-0.61,6.75-5.67,26.9-3.97-0.08-7.38,21.42-0.44,22.49-13.91,2.75-6.91,18.81,1.02,20.01-11.15,23.9,1.29,6.24-5.07,21.79,8.36,15.33-2.21,6.87,4.28,10.35-3.1,14.6,6.88,16.09-13.59,38.83,6.72,15.2-6.51,25.39,10.67,18.15-6.51,12.21,5.02,14.59-5.74,36.04,0.97,16.74-6.23,10.6,3.96,15.91-5.28,13.2,6.8,20.48-6.71,10.87,3.88,11.98-5.82,29.29,1.62,17.94-5.5,33.25,0.44,12.33,5.96,30.04-6.48,7.9,4.46,10.14-5.98,29.31,1.62,10.13,7.42,23.58-6.77,6.81,5.81,20.14-6.07L1000,314.8v185.2H0V314.8L781.68,324.4z"
-          fill="#4CAF50"
-          stroke="#2E7D32"
-          strokeWidth="1"
-        />
-      </svg>
-      {recipes.map((recipe, index) => (
-        <div
-          key={index}
-          className="absolute w-4 h-4 bg-red-500 rounded-full transform -translate-x-1/2 -translate-y-1/2"
-          style={{
-            left: `${(recipe.location.lng + 180) / 360 * 100}%`,
-            top: `${(90 - recipe.location.lat) / 180 * 100}%`,
-          }}
-          title={`${recipe.name} - ${recipe.location.name}`}
-        />
-      ))}
-    </div>
-  );
+  useEffect(() => {
+    // Initialize the map and set its view to a reasonable default (centered)
+    const map = L.map('map').setView([20, 0], 2); // World view
+
+    // Set up tile layer for the map (OpenStreetMap in this case)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+
+    // Plot recipe markers on the map
+    recipes.forEach((recipe) => {
+      const marker = L.marker([recipe.location.lat, recipe.location.lng])
+        .addTo(map)
+        .bindPopup(`<b>${recipe.name}</b><br>${recipe.location.name}`);
+    });
+
+    // Clean up function to remove the map instance
+    return () => {
+      map.remove();
+    };
+  }, [recipes]);
+
+  return <div id="map" style={{ height: '100vh', width: '100%' }}></div>;
 };
 
 export default WorldMap;
