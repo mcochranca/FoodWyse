@@ -1,6 +1,4 @@
-# FoodWyse
-
-[Edit in StackBlitz next generation editor ⚡️](https://stackblitz.com/~/github.com/mcochranca/sb1-ukj8s4)
+# [FoodWyse](https://stackblitz.com/~/github.com/mcochranca/FoodWyse)
 
 
 ---
